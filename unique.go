@@ -32,7 +32,7 @@ func (self * Unique_t) dividable(value uint64) bool {
 	return value == ((value >> self.age) << self.age)
 }
 
-func (self * Unique_t) add(value uint64) {
+func (self * Unique_t) AddUint64(value uint64) {
 	if self.dividable(value) == false {
 		return
 	}
@@ -49,18 +49,13 @@ func (self * Unique_t) add(value uint64) {
 	}
 }
 
-func (self * Unique_t) AddUint64(value uint64) {
-	// value should be hashed
-	self.add(value)
-}
-
 func (self * Unique_t) Size() int {
 	self.mx.Lock()
 	defer self.mx.Unlock()
 	return len(self.res) * (1 << self.age)
 }
 
-func (self * Unique_t) Size2() (int, uint) {
+func (self * Unique_t) SizeAge() (int, uint) {
 	self.mx.Lock()
 	defer self.mx.Unlock()
 	return len(self.res), self.age
