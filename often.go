@@ -46,13 +46,13 @@ func (self * Often_t) Add(value interface{}) {
 	self.mx.Lock()
 	defer self.mx.Unlock()
 	if it, ok := self.res.CreateBack(value, 1); !ok {
-		it.Value = it.Value.(int) + 1
+		it.Update(it.Value().(int) + 1)
 	} else if self.res.Size() >= self.limit {
 		for it := self.res.Front(); it != self.res.End(); it = it.Next() {
-			if it.Value.(int) == 1 {
+			if it.Value().(int) == 1 {
 				self.res.Remove(it.Key())
 			} else {
-				it.Value = it.Value.(int) - 1
+				it.Update(it.Value().(int) - 1)
 			}
 		}
 	}
@@ -67,7 +67,7 @@ func (self * Often_t) Count() int {
 type Less_t struct {}
 
 func (Less_t) Less(a * cache.Value_t, b * cache.Value_t) bool {
-	if a.Value.(int) < b.Value.(int) {
+	if a.Value().(int) < b.Value().(int) {
 		return true
 	}
 	return false
@@ -78,7 +78,7 @@ func (self * Often_t) List(a Append, limit int) {
 	defer self.mx.Unlock()
 	self.res.InsertionSortBack(Less_t{})
 	for it := self.res.Front(); it != self.res.End() && limit > 0; it = it.Next() {
-		a.Append(Result_t{it.Key(), it.Value.(int)})
+		a.Append(Result_t{it.Key(), it.Value().(int)})
 		limit--
 	}
 }
