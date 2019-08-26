@@ -45,7 +45,7 @@ func (self * Often_t) Clear() {
 func (self * Often_t) Add(value interface{}) {
 	self.mx.Lock()
 	defer self.mx.Unlock()
-	if it, ok := self.res.CreateBack(value, 1); !ok {
+	if it, ok := self.res.CreateBack(value, func() interface{} {return 1}); !ok {
 		it.Update(it.Value().(int) + 1)
 	} else if self.res.Size() >= self.limit {
 		for it := self.res.Front(); it != self.res.End(); it = it.Next() {
