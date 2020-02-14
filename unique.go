@@ -4,14 +4,9 @@
 
 package unique
 
-import "sync"
-
-type umap_t map[uint64]struct{}
-
 type Unique_t struct {
-	mx sync.Mutex
-	res umap_t
-	age uint
+	res   map[uint64]struct{}
+	age   uint
 	limit int
 }
 
@@ -20,23 +15,19 @@ func dividable(value uint64, age uint) bool {
 	return value == ((value >> age) << age)
 }
 
-func NewUnique(limit int) (self * Unique_t) {
+func NewUnique(limit int) (self *Unique_t) {
 	self = &Unique_t{}
-	self.res = umap_t{}
+	self.res = map[uint64]struct{}{}
 	self.limit = limit
 	return
 }
 
-func (self * Unique_t) Clear() {
-	self.mx.Lock()
-	defer self.mx.Unlock()
+func (self *Unique_t) Clear() {
 	self.age = 0
-	self.res = umap_t{}
+	self.res = map[uint64]struct{}{}
 }
 
-func (self * Unique_t) AddUint64(value uint64) {
-	self.mx.Lock()
-	defer self.mx.Unlock()
+func (self *Unique_t) AddUint64(value uint64) {
 	if dividable(value, self.age) == false {
 		return
 	}
@@ -51,14 +42,10 @@ func (self * Unique_t) AddUint64(value uint64) {
 	}
 }
 
-func (self * Unique_t) SizeAge() (int, uint) {
-	self.mx.Lock()
-	defer self.mx.Unlock()
+func (self *Unique_t) SizeAge() (int, uint) {
 	return len(self.res), self.age
 }
 
-func (self * Unique_t) Count() int {
-	self.mx.Lock()
-	defer self.mx.Unlock()
+func (self *Unique_t) Count() int {
 	return len(self.res) * (1 << self.age)
 }

@@ -4,12 +4,14 @@
 
 package unique
 
-import "testing"
+import (
+	"testing"
 
-func TestUnique001(t * testing.T) {
+	"gotest.tools/assert"
+)
+
+func TestUnique01(t *testing.T) {
 	u := NewUnique(65536)
 	u.AddUint64(1)
-	if u.Count() != 1 {
-		t.Fatalf("1: %v", u.Count())
-	}
+	assert.Assert(t, u.Count() == 1)
 }
