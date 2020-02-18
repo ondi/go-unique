@@ -26,7 +26,7 @@ func TestOften01(t *testing.T) {
 			u.Add(a.Name)
 		}
 	}
-	assert.Assert(t, u.Count() == 3)
+	assert.Assert(t, u.Size() == 3)
 
 	res := u.List(len(data))
 	assert.Assert(t, len(res) == len(data))

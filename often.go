@@ -41,7 +41,7 @@ func (self *Often_t) Add(value interface{}) {
 	}
 }
 
-func (self *Often_t) Count() int {
+func (self *Often_t) Size() int {
 	return self.cc.Size()
 }
 
