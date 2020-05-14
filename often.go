@@ -27,11 +27,6 @@ func NewValue() Value {
 	return &Value_t{count: 1}
 }
 
-type Result_t struct {
-	Key   interface{}
-	Value Value
-}
-
 type Often_t struct {
 	cc    *cache.Cache_t
 	limit int
@@ -77,11 +72,11 @@ func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
 	return false
 }
 
-func (self *Often_t) List(limit int) (res []Result_t) {
+func (self *Often_t) Range(f func(key interface{}, value Value) bool) {
 	self.cc.InsertionSortBack(Less_t{})
-	for it := self.cc.Front(); it != self.cc.End() && limit > 0; it = it.Next() {
-		res = append(res, Result_t{Key: it.Key(), Value: it.Value().(Value)})
-		limit--
+	for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
+		if f(it.Key(), it.Value().(Value)) == false {
+			return
+		}
 	}
-	return
 }

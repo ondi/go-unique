@@ -34,7 +34,7 @@ func (self *Unique_t) AddUint64(value uint64) {
 	self.res[value] = struct{}{}
 	if len(self.res) >= self.limit {
 		self.age++
-		for k, _ := range self.res {
+		for k := range self.res {
 			if dividable(k, self.age) == false {
 				delete(self.res, k)
 			}
