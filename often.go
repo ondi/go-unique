@@ -11,6 +11,10 @@ type Value interface {
 	CountGet() int
 }
 
+type Less interface {
+	Less(a *cache.Value_t, b *cache.Value_t) bool
+}
+
 type Value_t struct {
 	count int
 }
@@ -72,8 +76,8 @@ func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
 	return false
 }
 
-func (self *Often_t) Range(f func(key interface{}, value Value) bool) {
-	self.cc.InsertionSortBack(Less_t{})
+func (self *Often_t) Range(less Less, f func(key interface{}, value Value) bool) {
+	self.cc.InsertionSortBack(less)
 	for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
 		if f(it.Key(), it.Value().(Value)) == false {
 			return
