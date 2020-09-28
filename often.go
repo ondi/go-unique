@@ -50,17 +50,17 @@ func (self *Often_t) Clear() {
 func (self *Often_t) Add(key interface{}, value func() Value) Value {
 	it, ok := self.cc.CreateBack(key, func() interface{} { return value() })
 	if !ok {
-		it.Value().(Value).CountAdd(1)
+		it.Value.(Value).CountAdd(1)
 	} else if self.cc.Size() >= self.limit {
 		for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
-			if it.Value().(Value).CountGet() == 1 {
-				self.cc.Remove(it.Key())
+			if it.Value.(Value).CountGet() == 1 {
+				self.cc.Remove(it.Key)
 			} else {
-				it.Value().(Value).CountAdd(-1)
+				it.Value.(Value).CountAdd(-1)
 			}
 		}
 	}
-	return it.Value().(Value)
+	return it.Value.(Value)
 }
 
 func (self *Often_t) Size() int {
@@ -70,7 +70,7 @@ func (self *Often_t) Size() int {
 type Less_t struct{}
 
 func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
-	if a.Value().(Value).CountGet() < b.Value().(Value).CountGet() {
+	if a.Value.(Value).CountGet() < b.Value.(Value).CountGet() {
 		return true
 	}
 	return false
@@ -79,7 +79,7 @@ func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
 func (self *Often_t) Range(less Less, f func(key interface{}, value Value) bool) {
 	self.cc.InsertionSortBack(less)
 	for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
-		if f(it.Key(), it.Value().(Value)) == false {
+		if f(it.Key, it.Value.(Value)) == false {
 			return
 		}
 	}
