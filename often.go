@@ -6,28 +6,24 @@ package unique
 
 import "github.com/ondi/go-cache"
 
-type Value interface {
-	CountAdd(int)
-	CountGet() int
-}
-
-type Less interface {
-	Less(a *cache.Value_t, b *cache.Value_t) bool
+type Counter interface {
+	CounterAdd(int)
+	CounterGet() int
 }
 
 type Value_t struct {
 	count int
 }
 
-func (self *Value_t) CountAdd(v int) {
+func (self *Value_t) CounterAdd(v int) {
 	self.count += v
 }
 
-func (self *Value_t) CountGet() int {
+func (self *Value_t) CounterGet() int {
 	return self.count
 }
 
-func NewValue() Value {
+func NewValue() Counter {
 	return &Value_t{count: 1}
 }
 
@@ -47,20 +43,27 @@ func (self *Often_t) Clear() {
 	self.cc = cache.New()
 }
 
-func (self *Often_t) Add(key interface{}, value func() Value) Value {
+func (self *Often_t) Add(key interface{}, value func() Counter) Counter {
 	it, ok := self.cc.CreateBack(key, func() interface{} { return value() })
 	if !ok {
-		it.Value.(Value).CountAdd(1)
+		it.Value.(Counter).CounterAdd(1)
 	} else if self.cc.Size() >= self.limit {
 		for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
-			if it.Value.(Value).CountGet() == 1 {
+			if it.Value.(Counter).CounterGet() == 1 {
 				self.cc.Remove(it.Key)
 			} else {
-				it.Value.(Value).CountAdd(-1)
+				it.Value.(Counter).CounterAdd(-1)
 			}
 		}
 	}
-	return it.Value.(Value)
+	return it.Value.(Counter)
+}
+
+func (self *Often_t) Get(key interface{}) (Counter, bool) {
+	if it, ok := self.cc.Find(key); ok {
+		return it.Value.(Counter), true
+	}
+	return nil, false
 }
 
 func (self *Often_t) Size() int {
@@ -70,16 +73,16 @@ func (self *Often_t) Size() int {
 type Less_t struct{}
 
 func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
-	if a.Value.(Value).CountGet() < b.Value.(Value).CountGet() {
+	if a.Value.(Counter).CounterGet() < b.Value.(Counter).CounterGet() {
 		return true
 	}
 	return false
 }
 
-func (self *Often_t) Range(less Less, f func(key interface{}, value Value) bool) {
+func (self *Often_t) Range(less cache.IsLess, f func(key interface{}, value Counter) bool) {
 	self.cc.InsertionSortBack(less)
 	for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
-		if f(it.Key, it.Value.(Value)) == false {
+		if f(it.Key, it.Value.(Counter)) == false {
 			return
 		}
 	}

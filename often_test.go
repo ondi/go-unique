@@ -21,12 +21,12 @@ var data = []struct {
 
 type Result_t struct {
 	Key   interface{}
-	Value Value
+	Value Counter
 }
 
 type ResultList_t []Result_t
 
-func (self *ResultList_t) Add(key interface{}, value Value) bool {
+func (self *ResultList_t) Add(key interface{}, value Counter) bool {
 	*self = append(*self, Result_t{key, value})
 	return true
 }
