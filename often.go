@@ -7,29 +7,16 @@ package unique
 import "github.com/ondi/go-cache"
 
 type Counter interface {
-	Increase()
-	Decrease()
-	Current() int
+	CounterAdd(int64) int64
 }
 
 type Value_t struct {
-	count int
+	count int64
 }
 
-func (self *Value_t) Increase() {
-	self.count++
-}
-
-func (self *Value_t) Decrease() {
-	self.count--
-}
-
-func (self *Value_t) Current() int {
+func (self *Value_t) CounterAdd(a int64) int64 {
+	self.count += a
 	return self.count
-}
-
-func NewValue() Counter {
-	return &Value_t{count: 1}
 }
 
 type Often_t struct {
@@ -48,20 +35,20 @@ func (self *Often_t) Clear() {
 	self.cc = cache.New()
 }
 
-func (self *Often_t) Add(key interface{}, value func() Counter) Counter {
-	it, ok := self.cc.CreateBack(key, func() interface{} { return value() })
-	if !ok {
-		it.Value.(Counter).Increase()
-	} else if self.cc.Size() >= self.limit {
+func (self *Often_t) Add(key interface{}, value func() Counter) (res Counter) {
+	it, _ := self.cc.CreateBack(key, func() interface{} { return value() })
+	res = it.Value.(Counter)
+	res.CounterAdd(1)
+	if self.cc.Size() >= self.limit {
 		for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
-			if it.Value.(Counter).Current() == 1 {
+			if it.Value.(Counter).CounterAdd(0) == 1 {
 				self.cc.Remove(it.Key)
 			} else {
-				it.Value.(Counter).Decrease()
+				it.Value.(Counter).CounterAdd(-1)
 			}
 		}
 	}
-	return it.Value.(Counter)
+	return
 }
 
 func (self *Often_t) Get(key interface{}) (Counter, bool) {
@@ -78,7 +65,7 @@ func (self *Often_t) Size() int {
 type Less_t struct{}
 
 func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
-	if a.Value.(Counter).Current() < b.Value.(Counter).Current() {
+	if a.Value.(Counter).CounterAdd(0) < b.Value.(Counter).CounterAdd(0) {
 		return true
 	}
 	return false
