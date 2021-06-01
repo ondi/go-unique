@@ -7,15 +7,19 @@ package unique
 import "github.com/ondi/go-cache"
 
 type Counter interface {
-	CounterAdd(int64) int64
+	CounterAdd(int64)
+	CounterGet() int64
 }
 
 type Value_t struct {
 	count int64
 }
 
-func (self *Value_t) CounterAdd(a int64) int64 {
+func (self *Value_t) CounterAdd(a int64) {
 	self.count += a
+}
+
+func (self *Value_t) CounterGet() int64 {
 	return self.count
 }
 
@@ -41,7 +45,7 @@ func (self *Often_t) Add(key interface{}, value func() Counter) (res Counter) {
 	res.CounterAdd(1)
 	if self.cc.Size() >= self.limit {
 		for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
-			if it.Value.(Counter).CounterAdd(0) == 1 {
+			if it.Value.(Counter).CounterGet() == 1 {
 				self.cc.Remove(it.Key)
 			} else {
 				it.Value.(Counter).CounterAdd(-1)
@@ -65,7 +69,7 @@ func (self *Often_t) Size() int {
 type Less_t struct{}
 
 func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
-	if a.Value.(Counter).CounterAdd(0) < b.Value.(Counter).CounterAdd(0) {
+	if a.Value.(Counter).CounterGet() < b.Value.(Counter).CounterGet() {
 		return true
 	}
 	return false
