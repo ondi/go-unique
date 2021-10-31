@@ -75,7 +75,7 @@ func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
 	return false
 }
 
-func (self *Often_t) Range(less cache.IsLess, f func(key interface{}, value Counter) bool) {
+func (self *Often_t) Range(less cache.MyLess, f func(key interface{}, value Counter) bool) {
 	self.cc.InsertionSortBack(less)
 	for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
 		if f(it.Key, it.Value.(Counter)) == false {
