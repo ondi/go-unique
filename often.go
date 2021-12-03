@@ -53,7 +53,7 @@ func (self *Often_t) Add(key interface{}, value func() Counter) (res Counter) {
 	it, _ := self.cc.CreateBack(key, func() interface{} { return value() })
 	res = it.Value.(Counter)
 	res.CounterAdd(1)
-	if self.cc.Size() >= self.limit {
+	if self.cc.Size() > self.limit {
 		for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
 			if it.Value.(Counter).CounterGet() == 1 {
 				self.cc.Remove(it.Key)
