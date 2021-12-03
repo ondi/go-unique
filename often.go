@@ -11,6 +11,10 @@ type Counter interface {
 	CounterGet() int64
 }
 
+type Evicter interface {
+	Evict(key interface{})
+}
+
 type Value_t struct {
 	count int64
 }
@@ -23,16 +27,22 @@ func (self *Value_t) CounterGet() int64 {
 	return self.count
 }
 
+type Drop_t struct{}
+
+func (Drop_t) Evict(interface{}) {}
+
 type Often_t struct {
 	cc    *cache.Cache_t
+	evict Evicter
 	limit int
 }
 
-func NewOften(limit int) (self *Often_t) {
-	self = &Often_t{}
-	self.cc = cache.New()
-	self.limit = limit
-	return
+func NewOften(limit int, evict Evicter) *Often_t {
+	return &Often_t{
+		cc:    cache.New(),
+		evict: evict,
+		limit: limit,
+	}
 }
 
 func (self *Often_t) Clear() {
@@ -47,6 +57,7 @@ func (self *Often_t) Add(key interface{}, value func() Counter) (res Counter) {
 		for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
 			if it.Value.(Counter).CounterGet() == 1 {
 				self.cc.Remove(it.Key)
+				self.evict.Evict(it.Key)
 			} else {
 				it.Value.(Counter).CounterAdd(-1)
 			}

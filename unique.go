@@ -6,12 +6,12 @@ package unique
 
 type Unique_t struct {
 	res   map[uint64]struct{}
-	age   uint
+	age   uint64
 	limit int
 }
 
 // dividable by 2 ^ age
-func dividable(value uint64, age uint) bool {
+func dividable(value uint64, age uint64) bool {
 	return value == ((value >> age) << age)
 }
 
@@ -23,12 +23,12 @@ func NewUnique(limit int) (self *Unique_t) {
 }
 
 func (self *Unique_t) Clear() {
-	self.age = 0
 	self.res = map[uint64]struct{}{}
+	self.age = 0
 }
 
-func (self *Unique_t) AddUint64(value uint64) {
-	if dividable(value, self.age) == false {
+func (self *Unique_t) AddUint64(value uint64) (added bool) {
+	if added = dividable(value, self.age); added == false {
 		return
 	}
 	self.res[value] = struct{}{}
@@ -40,12 +40,17 @@ func (self *Unique_t) AddUint64(value uint64) {
 			}
 		}
 	}
-}
-
-func (self *Unique_t) SizeAge() (int, uint) {
-	return len(self.res), self.age
+	return
 }
 
 func (self *Unique_t) Count() int {
 	return len(self.res) * (1 << self.age)
+}
+
+func (self *Unique_t) Size() int {
+	return len(self.res)
+}
+
+func (self *Unique_t) Age() uint64 {
+	return self.age
 }
