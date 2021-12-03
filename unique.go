@@ -28,8 +28,11 @@ func (self *Unique_t) Clear() {
 }
 
 func (self *Unique_t) AddUint64(value uint64) (added bool) {
-	if added = dividable(value, self.age); added == false {
+	if added = dividable(value, self.age); !added {
 		return
+	}
+	if _, added = self.res[value]; added {
+		return false
 	}
 	self.res[value] = struct{}{}
 	if len(self.res) >= self.limit {
@@ -40,7 +43,7 @@ func (self *Unique_t) AddUint64(value uint64) (added bool) {
 			}
 		}
 	}
-	return
+	return true
 }
 
 func (self *Unique_t) Count() int {
