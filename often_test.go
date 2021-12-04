@@ -32,7 +32,7 @@ func (self *ResultList_t) Add(key interface{}, value Counter) bool {
 }
 
 func TestOften01(t *testing.T) {
-	u := NewOften(65536, Drop_t{})
+	u := NewOften(65536, Drop)
 	for _, a := range data {
 		for i := 0; i < a.Count; i++ {
 			u.Add(a.Name, func() Counter { return &Value_t{} })
