@@ -11,8 +11,9 @@ type Counter interface {
 	CounterGet() int64
 }
 
+// same as Range() to evict one elemts in Often_t or whole Often_t in timeline
 type Evicter interface {
-	Evict(key interface{})
+	Evict(fn func(less cache.MyLess, f func(key interface{}, value Counter) bool))
 }
 
 type Value_t struct {
@@ -29,7 +30,7 @@ func (self *Value_t) CounterGet() int64 {
 
 type Drop_t struct{}
 
-func (Drop_t) Evict(interface{}) {}
+func (Drop_t) Evict(fn func(less cache.MyLess, f func(key interface{}, value Counter) bool)) {}
 
 type Often_t struct {
 	cc    *cache.Cache_t
@@ -57,7 +58,11 @@ func (self *Often_t) Add(key interface{}, value func() Counter) (res Counter) {
 		for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
 			if it.Value.(Counter).CounterGet() == 1 {
 				self.cc.Remove(it.Key)
-				self.evict.Evict(it.Key)
+				self.evict.Evict(
+					func(less cache.MyLess, f func(key interface{}, value Counter) bool) {
+						f(it.Key, it.Value.(Counter))
+					},
+				)
 			} else {
 				it.Value.(Counter).CounterAdd(-1)
 			}

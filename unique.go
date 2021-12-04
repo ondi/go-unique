@@ -38,7 +38,7 @@ func (self *Unique_t) AddUint64(value uint64) (added bool) {
 	if len(self.res) >= self.limit {
 		self.age++
 		for k := range self.res {
-			if dividable(k, self.age) == false {
+			if !dividable(k, self.age) {
 				delete(self.res, k)
 			}
 		}
