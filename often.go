@@ -11,8 +11,8 @@ type Counter interface {
 	CounterGet() int64
 }
 
-// same as Range() to evict one elemts in Often_t or whole Often_t in timeline
-type Evict func(fn func(less cache.MyLess, f func(key interface{}, value Counter) bool))
+// same as RangeRaw() to evict one elemts in Often_t or whole Often_t in timeline
+type Evict func(f func(f func(key interface{}, value Counter) bool))
 
 type Value_t struct {
 	count int64
@@ -26,7 +26,16 @@ func (self *Value_t) CounterGet() int64 {
 	return self.count
 }
 
-func Drop(fn func(less cache.MyLess, f func(key interface{}, value Counter) bool)) {}
+func Drop(f func(f func(key interface{}, value Counter) bool)) {}
+
+type Less_t struct{}
+
+func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
+	if a.Value.(Counter).CounterGet() < b.Value.(Counter).CounterGet() {
+		return true
+	}
+	return false
+}
 
 type Often_t struct {
 	cc    *cache.Cache_t
@@ -55,7 +64,7 @@ func (self *Often_t) Add(key interface{}, value func() Counter) (res Counter) {
 			if it.Value.(Counter).CounterGet() == 1 {
 				self.cc.Remove(it.Key)
 				self.evict(
-					func(less cache.MyLess, f func(key interface{}, value Counter) bool) {
+					func(f func(key interface{}, value Counter) bool) {
 						f(it.Key, it.Value.(Counter))
 					},
 				)
@@ -78,17 +87,12 @@ func (self *Often_t) Size() int {
 	return self.cc.Size()
 }
 
-type Less_t struct{}
-
-func (Less_t) Less(a *cache.Value_t, b *cache.Value_t) bool {
-	if a.Value.(Counter).CounterGet() < b.Value.(Counter).CounterGet() {
-		return true
-	}
-	return false
-}
-
 func (self *Often_t) Range(less cache.MyLess, f func(key interface{}, value Counter) bool) {
 	self.cc.InsertionSortBack(less)
+	self.RangeRaw(f)
+}
+
+func (self *Often_t) RangeRaw(f func(key interface{}, value Counter) bool) {
 	for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
 		if f(it.Key, it.Value.(Counter)) == false {
 			return
