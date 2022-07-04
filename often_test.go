@@ -26,7 +26,7 @@ type Result_t struct {
 
 type ResultList_t []Result_t
 
-func (self *ResultList_t) Add(key interface{}, value Counter) bool {
+func (self *ResultList_t) Add(key string, value Counter) bool {
 	*self = append(*self, Result_t{key, value})
 	return true
 }
