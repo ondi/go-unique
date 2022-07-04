@@ -30,9 +30,7 @@ func (self *Value_t) CounterGet() int64 {
 
 func Drop(f func(f func(key string, value Counter) bool)) {}
 
-type Less_t struct{}
-
-func (Less_t) Less(a *cache.Value_t[string, Counter], b *cache.Value_t[string, Counter]) bool {
+func Less(a *cache.Value_t[string, Counter], b *cache.Value_t[string, Counter]) bool {
 	if any(a.Value).(Counter).CounterGet() < any(b.Value).(Counter).CounterGet() {
 		return true
 	}
@@ -89,7 +87,7 @@ func (self *Often_t) Size() int {
 	return self.cc.Size()
 }
 
-func (self *Often_t) Range(less cache.MyLess[string, Counter], f func(key string, value Counter) bool) {
+func (self *Often_t) Range(less cache.Less[string, Counter], f func(key string, value Counter) bool) {
 	self.cc.InsertionSortBack(less)
 	self.RangeRaw(f)
 }
