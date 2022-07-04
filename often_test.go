@@ -20,7 +20,7 @@ var data = []struct {
 }
 
 type Result_t struct {
-	Key   interface{}
+	Key   string
 	Value Counter
 }
 
@@ -43,7 +43,7 @@ func TestOften01(t *testing.T) {
 	var res ResultList_t
 	u.Range(Less_t{}, res.Add)
 	assert.Assert(t, len(res) == len(data))
-	assert.Assert(t, res[0].Key.(string) == data[2].Name)
-	assert.Assert(t, res[1].Key.(string) == data[1].Name)
-	assert.Assert(t, res[2].Key.(string) == data[0].Name)
+	assert.Assert(t, res[0].Key == data[2].Name)
+	assert.Assert(t, res[1].Key == data[1].Name)
+	assert.Assert(t, res[2].Key == data[0].Name)
 }
