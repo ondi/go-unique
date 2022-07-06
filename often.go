@@ -16,6 +16,8 @@ type Counter interface {
 // same as RangeRaw() to evict one elemts in Often_t or whole Often_t in timeline
 type Evict func(f func(f func(key string, value Counter) bool))
 
+type Less_t = cache.Less_t[string, Counter]
+
 type Value_t struct {
 	count int64
 }
@@ -87,7 +89,7 @@ func (self *Often_t) Size() int {
 	return self.cc.Size()
 }
 
-func (self *Often_t) Range(less cache.Less[string, Counter], f func(key string, value Counter) bool) {
+func (self *Often_t) Range(less Less_t, f func(key string, value Counter) bool) {
 	self.cc.InsertionSortBack(less)
 	self.RangeRaw(f)
 }

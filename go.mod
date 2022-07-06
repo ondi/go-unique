@@ -3,7 +3,7 @@ module github.com/ondi/go-unique
 go 1.18
 
 require (
-	github.com/ondi/go-cache v0.0.0-20220704124719-e18a5c0fa086
+	github.com/ondi/go-cache v0.0.0-20220706043832-a192bbb22b21
 	gotest.tools v2.2.0+incompatible
 )
 
