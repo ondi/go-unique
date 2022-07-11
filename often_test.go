@@ -41,7 +41,7 @@ func TestOften01(t *testing.T) {
 	assert.Assert(t, u.Size() == 3)
 
 	var res ResultList_t
-	u.Range(Less, res.Add)
+	u.RangeSort(Less, res.Add)
 	assert.Assert(t, len(res) == len(data))
 	assert.Assert(t, res[0].Key == data[2].Name)
 	assert.Assert(t, res[1].Key == data[1].Name)

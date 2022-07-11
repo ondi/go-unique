@@ -5,9 +5,9 @@
 package unique
 
 type Unique_t struct {
-	res   map[uint64]struct{}
-	age   uint64
-	limit int
+	samples map[uint64]struct{}
+	age     uint64
+	limit   int
 }
 
 // dividable by 2 ^ age
@@ -17,13 +17,13 @@ func dividable(value uint64, age uint64) bool {
 
 func NewUnique(limit int) (self *Unique_t) {
 	self = &Unique_t{}
-	self.res = map[uint64]struct{}{}
+	self.samples = map[uint64]struct{}{}
 	self.limit = limit
 	return
 }
 
 func (self *Unique_t) Clear() {
-	self.res = map[uint64]struct{}{}
+	self.samples = map[uint64]struct{}{}
 	self.age = 0
 }
 
@@ -31,15 +31,15 @@ func (self *Unique_t) AddUint64(value uint64) (added bool) {
 	if added = dividable(value, self.age); !added {
 		return
 	}
-	if _, added = self.res[value]; added {
+	if _, added = self.samples[value]; added {
 		return false
 	}
-	self.res[value] = struct{}{}
-	if len(self.res) >= self.limit {
+	self.samples[value] = struct{}{}
+	if len(self.samples) >= self.limit {
 		self.age++
-		for k := range self.res {
+		for k := range self.samples {
 			if !dividable(k, self.age) {
-				delete(self.res, k)
+				delete(self.samples, k)
 			}
 		}
 	}
@@ -47,11 +47,11 @@ func (self *Unique_t) AddUint64(value uint64) (added bool) {
 }
 
 func (self *Unique_t) Count() int {
-	return len(self.res) * (1 << self.age)
+	return len(self.samples) * (1 << self.age)
 }
 
 func (self *Unique_t) Size() int {
-	return len(self.res)
+	return len(self.samples)
 }
 
 func (self *Unique_t) Age() uint64 {
