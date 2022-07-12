@@ -21,27 +21,27 @@ var data = []struct {
 
 type Result_t struct {
 	Key   string
-	Value Counter
+	Value *Value_t
 }
 
 type ResultList_t []Result_t
 
-func (self *ResultList_t) Add(key string, value Counter) bool {
+func (self *ResultList_t) Add(key string, value *Value_t) bool {
 	*self = append(*self, Result_t{key, value})
 	return true
 }
 
 func TestOften01(t *testing.T) {
-	u := NewOften(65536, Drop)
+	u := NewOften(65536, Drop[*Value_t])
 	for _, a := range data {
 		for i := 0; i < a.Count; i++ {
-			u.Add(a.Name, func() Counter { return &Value_t{} })
+			u.Add(a.Name, func() *Value_t { return &Value_t{} })
 		}
 	}
 	assert.Assert(t, u.Size() == 3)
 
 	var res ResultList_t
-	u.RangeSort(Less, res.Add)
+	u.RangeSort(Less[*Value_t], res.Add)
 	assert.Assert(t, len(res) == len(data))
 	assert.Assert(t, res[0].Key == data[2].Name)
 	assert.Assert(t, res[1].Key == data[1].Name)

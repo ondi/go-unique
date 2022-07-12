@@ -8,11 +8,6 @@ import (
 	"github.com/ondi/go-cache"
 )
 
-type Less_t = cache.Less_t[string, Counter]
-
-// same as Range() to evict one elemts in Often_t or whole Often_t in timeline
-type Evict func(f func(f func(key string, value Counter) bool))
-
 type Counter interface {
 	CounterAdd(int64) int64
 }
@@ -26,31 +21,34 @@ func (self *Value_t) CounterAdd(a int64) int64 {
 	return self.count
 }
 
-func Drop(f func(f func(key string, value Counter) bool)) {}
+// to evict often.Range()
+type Evict[Mapped_t Counter] func(f func(f func(key string, value Mapped_t) bool))
 
-func Less(a *cache.Value_t[string, Counter], b *cache.Value_t[string, Counter]) bool {
+func Drop[Mapped_t Counter](f func(f func(key string, value Mapped_t) bool)) {}
+
+func Less[Mapped_t Counter](a *cache.Value_t[string, Mapped_t], b *cache.Value_t[string, Mapped_t]) bool {
 	return a.Value.CounterAdd(0) < b.Value.CounterAdd(0)
 }
 
-type Often_t struct {
-	cc    *cache.Cache_t[string, Counter]
-	evict Evict
+type Often_t[Mapped_t Counter] struct {
+	cc    *cache.Cache_t[string, Mapped_t]
+	evict Evict[Mapped_t]
 	limit int
 }
 
-func NewOften(limit int, evict Evict) *Often_t {
-	return &Often_t{
-		cc:    cache.New[string, Counter](),
+func NewOften[Mapped_t Counter](limit int, evict Evict[Mapped_t]) *Often_t[Mapped_t] {
+	return &Often_t[Mapped_t]{
+		cc:    cache.New[string, Mapped_t](),
 		evict: evict,
 		limit: limit,
 	}
 }
 
-func (self *Often_t) Clear() {
-	self.cc = cache.New[string, Counter]()
+func (self *Often_t[Mapped_t]) Clear() {
+	self.cc = cache.New[string, Mapped_t]()
 }
 
-func (self *Often_t) Add(key string, value func() Counter) Counter {
+func (self *Often_t[Mapped_t]) Add(key string, value func() Mapped_t) Mapped_t {
 	it1, _ := self.cc.CreateBack(key, value)
 	it1.Value.CounterAdd(1)
 	if self.cc.Size() > self.limit {
@@ -58,7 +56,7 @@ func (self *Often_t) Add(key string, value func() Counter) Counter {
 			if it2.Value.CounterAdd(-1) == 0 {
 				self.cc.Remove(it2.Key)
 				self.evict(
-					func(f func(key string, value Counter) bool) {
+					func(f func(key string, value Mapped_t) bool) {
 						f(it2.Key, it2.Value)
 					},
 				)
@@ -68,23 +66,23 @@ func (self *Often_t) Add(key string, value func() Counter) Counter {
 	return it1.Value
 }
 
-func (self *Often_t) Get(key string) (Counter, bool) {
+func (self *Often_t[Mapped_t]) Get(key string) (res Mapped_t, ok bool) {
 	if it, ok := self.cc.Find(key); ok {
 		return it.Value, true
 	}
-	return nil, false
+	return
 }
 
-func (self *Often_t) Size() int {
+func (self *Often_t[Mapped_t]) Size() int {
 	return self.cc.Size()
 }
 
-func (self *Often_t) RangeSort(less Less_t, f func(key string, value Counter) bool) {
+func (self *Often_t[Mapped_t]) RangeSort(less cache.Less_t[string, Mapped_t], f func(key string, value Mapped_t) bool) {
 	self.cc.InsertionSortBack(less)
 	self.Range(f)
 }
 
-func (self *Often_t) Range(f func(key string, value Counter) bool) {
+func (self *Often_t[Mapped_t]) Range(f func(key string, value Mapped_t) bool) {
 	for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
 		if f(it.Key, it.Value) == false {
 			return
