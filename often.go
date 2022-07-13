@@ -10,6 +10,7 @@ import (
 
 type Counter interface {
 	CounterAdd(int64) int64
+	CounterSet(int64)
 }
 
 type Value_t struct {
@@ -19,6 +20,10 @@ type Value_t struct {
 func (self *Value_t) CounterAdd(a int64) int64 {
 	self.count += a
 	return self.count
+}
+
+func (self *Value_t) CounterSet(a int64) {
+	self.count = a
 }
 
 // to evict often.Range()
@@ -53,7 +58,7 @@ func (self *Often_t[Mapped_t]) Add(key string, value func() Mapped_t) Mapped_t {
 	it1.Value.CounterAdd(1)
 	if self.cc.Size() > self.limit {
 		for it2 := self.cc.Front(); it2 != self.cc.End(); it2 = it2.Next() {
-			if it2.Value.CounterAdd(-1) == 0 {
+			if it2.Value.CounterAdd(-1) <= 0 {
 				self.cc.Remove(it2.Key)
 				self.evict(
 					func(f func(key string, value Mapped_t) bool) {
