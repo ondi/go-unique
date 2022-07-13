@@ -60,6 +60,7 @@ func (self *Often_t[Mapped_t]) Add(key string, value func() Mapped_t) Mapped_t {
 						f(it2.Key, it2.Value)
 					},
 				)
+				break
 			}
 		}
 	}
