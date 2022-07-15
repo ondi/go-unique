@@ -51,8 +51,8 @@ func (self *Often_t[Mapped_t]) Clear() {
 	self.cc = cache.New[string, Mapped_t]()
 }
 
-func (self *Often_t[Mapped_t]) Add(key string, value func() Mapped_t) Mapped_t {
-	it1, _ := self.cc.CreateBack(key, value)
+func (self *Often_t[Mapped_t]) Add(key string, value func() Mapped_t) (res Mapped_t, ok bool) {
+	it1, ok := self.cc.CreateBack(key, value)
 	it1.Value.CounterAdd(1)
 	if self.cc.Size() > self.limit {
 		for it2 := self.cc.Front(); it2 != self.cc.End(); it2 = it2.Next() {
@@ -63,7 +63,8 @@ func (self *Often_t[Mapped_t]) Add(key string, value func() Mapped_t) Mapped_t {
 			}
 		}
 	}
-	return it1.Value
+	res = it1.Value
+	return
 }
 
 func (self *Often_t[Mapped_t]) Get(key string) (res Mapped_t, ok bool) {
