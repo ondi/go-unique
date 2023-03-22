@@ -35,7 +35,7 @@ func TestOften01(t *testing.T) {
 	u := NewOften(65536, Drop[*Value_t])
 	for _, a := range data {
 		for i := 0; i < a.Count; i++ {
-			u.Add(a.Name, func() *Value_t { return &Value_t{} })
+			u.Add(a.Name, func(p **Value_t) { *p = &Value_t{} })
 		}
 	}
 	assert.Assert(t, u.Size() == 3)

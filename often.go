@@ -51,7 +51,7 @@ func (self *Often_t[Mapped_t]) Clear() {
 	self.cc = cache.New[string, Mapped_t]()
 }
 
-func (self *Often_t[Mapped_t]) Add(key string, value func() Mapped_t) (res Mapped_t, ok bool) {
+func (self *Often_t[Mapped_t]) Add(key string, value func(*Mapped_t)) (res Mapped_t, ok bool) {
 	it1, ok := self.cc.CreateBack(key, value)
 	it1.Value.CounterAdd(1)
 	if self.cc.Size() > self.limit {
