@@ -52,7 +52,7 @@ func (self *Often_t[Mapped_t]) Clear() {
 }
 
 func (self *Often_t[Mapped_t]) Add(key string, value func(*Mapped_t)) (res Mapped_t, ok bool) {
-	it1, ok := self.cc.CreateBack(key, value)
+	it1, ok := self.cc.CreateBack(key, value, func(*Mapped_t) {})
 	it1.Value.CounterAdd(1)
 	if self.cc.Size() > self.limit {
 		for it2 := self.cc.Front(); it2 != self.cc.End(); it2 = it2.Next() {
