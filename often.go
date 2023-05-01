@@ -67,9 +67,12 @@ func (self *Often_t[Mapped_t]) Add(key string, value func(*Mapped_t)) (res Mappe
 	return
 }
 
-func (self *Often_t[Mapped_t]) Get(key string) (Mapped_t, bool) {
+func (self *Often_t[Mapped_t]) Get(key string) (out Mapped_t, ok bool) {
 	it, ok := self.cc.Find(key)
-	return it.Value, ok
+	if ok {
+		out = it.Value
+	}
+	return
 }
 
 func (self *Often_t[Mapped_t]) Size() int {
