@@ -32,7 +32,7 @@ func (self *ResultList_t) Add(key string, value *Value_t) bool {
 }
 
 func TestOften01(t *testing.T) {
-	u := NewOften(65536, Drop[*Value_t])
+	u := NewOften(65536, Drop[string, *Value_t])
 	for _, a := range data {
 		for i := 0; i < a.Count; i++ {
 			u.Add(a.Name, func(p **Value_t) { *p = &Value_t{} })
@@ -41,7 +41,7 @@ func TestOften01(t *testing.T) {
 	assert.Assert(t, u.Size() == 3)
 
 	var res ResultList_t
-	u.RangeSort(Less[*Value_t], res.Add)
+	u.RangeSort(Less[string, *Value_t], res.Add)
 	assert.Assert(t, len(res) == len(data))
 	assert.Assert(t, res[0].Key == data[2].Name)
 	assert.Assert(t, res[1].Key == data[1].Name)

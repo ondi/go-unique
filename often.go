@@ -25,33 +25,33 @@ func (self *Value_t) CounterGet() int64 {
 	return self.count
 }
 
-type Evict_t[Mapped_t Counter] func(key string, value Mapped_t)
+type Evict_t[Key_t comparable, Mapped_t Counter] func(key Key_t, value Mapped_t)
 
-func Drop[Mapped_t Counter](key string, value Mapped_t) {}
+func Drop[Key_t comparable, Mapped_t Counter](key Key_t, value Mapped_t) {}
 
-func Less[Mapped_t Counter](a *cache.Value_t[string, Mapped_t], b *cache.Value_t[string, Mapped_t]) bool {
+func Less[Key_t comparable, Mapped_t Counter](a *cache.Value_t[Key_t, Mapped_t], b *cache.Value_t[Key_t, Mapped_t]) bool {
 	return a.Value.CounterGet() < b.Value.CounterGet()
 }
 
-type Often_t[Mapped_t Counter] struct {
-	cc    *cache.Cache_t[string, Mapped_t]
-	evict Evict_t[Mapped_t]
+type Often_t[Key_t comparable, Mapped_t Counter] struct {
+	cc    *cache.Cache_t[Key_t, Mapped_t]
+	evict Evict_t[Key_t, Mapped_t]
 	limit int
 }
 
-func NewOften[Mapped_t Counter](limit int, evict Evict_t[Mapped_t]) *Often_t[Mapped_t] {
-	return &Often_t[Mapped_t]{
-		cc:    cache.New[string, Mapped_t](),
+func NewOften[Key_t comparable, Mapped_t Counter](limit int, evict Evict_t[Key_t, Mapped_t]) *Often_t[Key_t, Mapped_t] {
+	return &Often_t[Key_t, Mapped_t]{
+		cc:    cache.New[Key_t, Mapped_t](),
 		evict: evict,
 		limit: limit,
 	}
 }
 
-func (self *Often_t[Mapped_t]) Clear() {
-	self.cc = cache.New[string, Mapped_t]()
+func (self *Often_t[Key_t, Mapped_t]) Clear() {
+	self.cc = cache.New[Key_t, Mapped_t]()
 }
 
-func (self *Often_t[Mapped_t]) Add(key string, value func(*Mapped_t)) (res Mapped_t, ok bool) {
+func (self *Often_t[Key_t, Mapped_t]) Add(key Key_t, value func(*Mapped_t)) (res Mapped_t, ok bool) {
 	it1, ok := self.cc.CreateBack(key, value, func(*Mapped_t) {})
 	it1.Value.CounterAdd(1)
 	if self.cc.Size() > self.limit {
@@ -67,7 +67,7 @@ func (self *Often_t[Mapped_t]) Add(key string, value func(*Mapped_t)) (res Mappe
 	return
 }
 
-func (self *Often_t[Mapped_t]) Get(key string) (out Mapped_t, ok bool) {
+func (self *Often_t[Key_t, Mapped_t]) Get(key Key_t) (out Mapped_t, ok bool) {
 	it, ok := self.cc.Find(key)
 	if ok {
 		out = it.Value
@@ -75,16 +75,16 @@ func (self *Often_t[Mapped_t]) Get(key string) (out Mapped_t, ok bool) {
 	return
 }
 
-func (self *Often_t[Mapped_t]) Size() int {
+func (self *Often_t[Key_t, Mapped_t]) Size() int {
 	return self.cc.Size()
 }
 
-func (self *Often_t[Mapped_t]) RangeSort(less cache.Less_t[string, Mapped_t], f func(key string, value Mapped_t) bool) {
+func (self *Often_t[Key_t, Mapped_t]) RangeSort(less cache.Less_t[Key_t, Mapped_t], f func(key Key_t, value Mapped_t) bool) {
 	self.cc.InsertionSortBack(less)
 	self.Range(f)
 }
 
-func (self *Often_t[Mapped_t]) Range(f func(key string, value Mapped_t) bool) {
+func (self *Often_t[Key_t, Mapped_t]) Range(f func(key Key_t, value Mapped_t) bool) {
 	for it := self.cc.Front(); it != self.cc.End(); it = it.Next() {
 		if f(it.Key, it.Value) == false {
 			return
