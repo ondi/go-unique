@@ -13,18 +13,6 @@ type Counter interface {
 	CounterGet() int64
 }
 
-type Value_t struct {
-	count int64
-}
-
-func (self *Value_t) CounterAdd(a int64) {
-	self.count += a
-}
-
-func (self *Value_t) CounterGet() int64 {
-	return self.count
-}
-
 type Evict_t[Key_t comparable, Mapped_t Counter] func(key Key_t, value Mapped_t)
 
 func Drop[Key_t comparable, Mapped_t Counter](key Key_t, value Mapped_t) {}

@@ -10,6 +10,18 @@ import (
 	"gotest.tools/assert"
 )
 
+type Value_t struct {
+	count int64
+}
+
+func (self *Value_t) CounterAdd(a int64) {
+	self.count += a
+}
+
+func (self *Value_t) CounterGet() int64 {
+	return self.count
+}
+
 var data = []struct {
 	Name  string
 	Count int
