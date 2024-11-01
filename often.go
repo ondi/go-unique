@@ -55,6 +55,11 @@ func (self *Often_t[Key_t, Mapped_t]) Add(key Key_t, value func(*Mapped_t)) (res
 	return
 }
 
+func (self *Often_t[Key_t, Mapped_t]) Del(key Key_t) (ok bool) {
+	_, ok = self.cc.Remove(key)
+	return
+}
+
 func (self *Often_t[Key_t, Mapped_t]) Get(key Key_t) (out Mapped_t, ok bool) {
 	it, ok := self.cc.Find(key)
 	if ok {
