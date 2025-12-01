@@ -39,7 +39,7 @@ func (self *Often_t[Key_t, Mapped_t]) Clear() {
 	self.cc = cache.New[Key_t, Mapped_t]()
 }
 
-func (self *Often_t[Key_t, Mapped_t]) Add(key Key_t, value_init func(*Mapped_t), value_update func(*Mapped_t)) (res Mapped_t, ok bool) {
+func (self *Often_t[Key_t, Mapped_t]) Create(key Key_t, value_init func(*Mapped_t), value_update func(*Mapped_t)) (res Mapped_t, ok bool) {
 	it1, ok := self.cc.CreateBack(key, value_init, value_update)
 	it1.Value.CounterAdd(1)
 	if self.cc.Size() > self.limit {
@@ -55,7 +55,7 @@ func (self *Often_t[Key_t, Mapped_t]) Add(key Key_t, value_init func(*Mapped_t),
 	return
 }
 
-func (self *Often_t[Key_t, Mapped_t]) Del(key Key_t) (ok bool) {
+func (self *Often_t[Key_t, Mapped_t]) Remove(key Key_t) (ok bool) {
 	_, ok = self.cc.Remove(key)
 	return
 }
